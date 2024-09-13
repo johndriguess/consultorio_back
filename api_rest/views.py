@@ -95,12 +95,7 @@ def register_user(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = User(
-                user_name=serializer.validated_data['user_name'],
-                user_cpf=serializer.validated_data['user_cpf'],
-                user_email=serializer.validated_data['user_email'],
-                user_age=serializer.validated_data['user_age']
-            )
+            user = serializer.save()
             user.set_password(serializer.validated_data['user_password'])
             user.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -111,7 +106,6 @@ def login_user(request):
     if request.method == 'POST':
         cpf = request.data.get('user_cpf')
         password = request.data.get('user_password')
-        
         try:
             user = User.objects.get(user_cpf=cpf)
             if user.check_password(password):
