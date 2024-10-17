@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.hashers import check_password
@@ -6,8 +7,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import User
-from .serializers import UserSerializer
+from .models import User, Consulta
+from .serializers import UserSerializer, ConsultaSerializer
+
+from .utils import gerar_horarios_disponiveis, filtrar_horarios_ocupados
 
 import json
 
@@ -114,3 +117,54 @@ def login_user(request):
                 return Response({"message": "Senha incorreta"}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({"message": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def marcar_consulta(request):
+    if request.method == 'POST':
+        consulta_data = request.data
+        serializer = ConsultaSerializer(data=consulta_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def listar_consultas_paciente(request, cpf):
+    try:
+        consultas = Consulta.objects.filter(paciente__user_cpf=cpf)
+        serializer = ConsultaSerializer(consultas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def horarios_disponiveis(request, cpf, data):
+    try:
+        data = datetime.strptime(data, '%Y-%m-%d').date()
+    except ValueError:
+        return Response(
+            {"error": "O parâmetro 'data' deve estar no formato 'YYYY-MM-DD'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+    except User.DoesNotExist:
+        return Response(
+            {"error": "Médico com o CPF fornecido não encontrado."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    horarios_disponiveis = gerar_horarios_disponiveis(data)
+    
+    horarios_filtrados = filtrar_horarios_ocupados(horarios_disponiveis, medico, data)
+
+    return Response({"horarios_disponiveis": horarios_filtrados}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def listar_medicos(request):
+    try:
+        medicos = User.objects.filter(user_type='doctor')  
+        serializer = UserSerializer(medicos, many=True)  
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

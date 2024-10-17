@@ -21,3 +21,19 @@ class User(models.Model):
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.user_password)
+    
+class Consulta(models.Model):
+    STATUS_CHOICES = [
+        ('marcada', 'Marcada'),
+        ('cancelada', 'Cancelada'),
+        ('concluída', 'Concluída'),
+    ]
+    
+    paciente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultas_paciente')
+    medico = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultas_medico')
+    data_hora = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='marcada')
+    motivo = models.TextField()
+
+    def __str__(self):
+        return f'{self.paciente.user_name} com {self.medico.user_name} em {self.data_hora}'

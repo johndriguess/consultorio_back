@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Consulta
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,3 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
             representation.pop('doctor_especialidade', None)
         
         return representation
+    
+class ConsultaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Consulta
+        fields = '__all__'
