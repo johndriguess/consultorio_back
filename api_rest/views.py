@@ -168,3 +168,15 @@ def listar_medicos(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def listar_consultas_medico(request, cpf):
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')  # Verifica se o usuário é médico
+        consultas = Consulta.objects.filter(medico=medico)  # Filtra as consultas para o médico
+        serializer = ConsultaSerializer(consultas, many=True)  # Serializa as consultas
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
