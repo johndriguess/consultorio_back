@@ -12,4 +12,5 @@ urlpatterns = [
     path('consultas/horarios/<str:cpf>/<str:data>/', views.horarios_disponiveis, name='horarios_disponiveis'),
     path('users/medicos/', views.listar_medicos, name='listar_medicos'),  
     path('consultas/medico/<str:cpf>/', views.listar_consultas_medico, name='listar_consultas_medico'),
+    path('consultas/<int:consulta_id>/atualizar-status/', views.atualizar_status_consulta, name='atualizar_status_consulta'),
 ]

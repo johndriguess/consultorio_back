@@ -172,11 +172,29 @@ def listar_medicos(request):
 @api_view(['GET'])
 def listar_consultas_medico(request, cpf):
     try:
-        medico = User.objects.get(user_cpf=cpf, user_type='doctor')  # Verifica se o usuário é médico
-        consultas = Consulta.objects.filter(medico=medico)  # Filtra as consultas para o médico
-        serializer = ConsultaSerializer(consultas, many=True)  # Serializa as consultas
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor') 
+        consultas = Consulta.objects.filter(medico=medico)  
+        serializer = ConsultaSerializer(consultas, many=True)  
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['PUT'])
+def atualizar_status_consulta(request, consulta_id):
+    try:
+        consulta = Consulta.objects.get(id=consulta_id)  
+    except Consulta.DoesNotExist:
+        return Response({"error": "Consulta não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+    
+    novo_status = request.data.get('status')
+    
+    if novo_status not in dict(Consulta.STATUS_CHOICES).keys():
+        return Response({"error": "Status inválido."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    consulta.status = novo_status
+    consulta.save()
+    
+    serializer = ConsultaSerializer(consulta)
+    return Response(serializer.data, status=status.HTTP_200_OK)
