@@ -18,4 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
 class ConsultaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consulta
-        fields = '__all__'
+        fields = [
+            'id', 'paciente', 'medico', 'data_hora', 'status', 'motivo',
+            'nome_medico', 'especialidade_medico', 'nome_paciente'
+        ]
+        read_only_fields = ['nome_medico', 'especialidade_medico', 'nome_paciente']

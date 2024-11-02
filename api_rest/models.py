@@ -27,6 +27,7 @@ class Consulta(models.Model):
         ('marcada', 'Marcada'),
         ('cancelada', 'Cancelada'),
         ('concluída', 'Concluída'),
+        ('atrasada', 'Atrasada'),
     ]
     
     paciente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultas_paciente')
@@ -34,6 +35,16 @@ class Consulta(models.Model):
     data_hora = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='marcada')
     motivo = models.TextField()
+    
+    nome_medico = models.CharField(max_length=100, default="Indefinido")
+    especialidade_medico = models.CharField(max_length=100, default="Indefinido")
+    nome_paciente = models.CharField(max_length=100, default="Indefinido")
+
+    def save(self, *args, **kwargs):
+        self.nome_medico = self.medico.user_name
+        self.especialidade_medico = self.medico.doctor_especialidade
+        self.nome_paciente = self.paciente.user_name
+        super().save(*args, **kwargs)  
 
     def __str__(self):
         return f'{self.paciente.user_name} com {self.medico.user_name} em {self.data_hora}'

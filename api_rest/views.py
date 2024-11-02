@@ -2,6 +2,8 @@ from datetime import datetime
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.hashers import check_password
+from django.utils import timezone
+from django.db.models import Count
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -147,15 +149,30 @@ def horarios_disponiveis(request, cpf, data):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    try:
-        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
-    except User.DoesNotExist:
-        return Response(
-            {"error": "Médico com o CPF fornecido não encontrado."},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    horarios_disponiveis = gerar_horarios_disponiveis(data)
-    
+    if data == timezone.now().date():
+        current_time = timezone.now().time()
+        if current_time < datetime.strptime('12:00', '%H:%M').time():
+            horarios_disponiveis = gerar_horarios_disponiveis(data)
+            horarios_disponiveis = [
+                horario for horario in horarios_disponiveis 
+                if horario.time() >= datetime.strptime('14:00', '%H:%M').time()
+            ]
+        else:
+            return Response(
+                {"error": "Não há horários disponíveis para hoje à tarde."},
+                status=status.HTTP_204_NO_CONTENT
+            )
+    else:
+        try:
+            medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Médico com o CPF fornecido não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        horarios_disponiveis = gerar_horarios_disponiveis(data)
+
     horarios_filtrados = filtrar_horarios_ocupados(horarios_disponiveis, medico, data)
 
     return Response({"horarios_disponiveis": horarios_filtrados}, status=status.HTTP_200_OK)
@@ -198,3 +215,76 @@ def atualizar_status_consulta(request, consulta_id):
     
     serializer = ConsultaSerializer(consulta)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def listar_consultas_hoje_medico(request, cpf):
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+        data_atual = timezone.now().date()
+        consultas = Consulta.objects.filter(medico=medico, data_hora__date=data_atual)
+        serializer = ConsultaSerializer(consultas, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def consultas_por_dia(request, cpf):
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+        hoje = timezone.now().date()
+        fim_periodo = hoje + timezone.timedelta(days=6)
+
+        consultas = Consulta.objects.filter(
+            medico=medico, 
+            data_hora__date__range=[hoje, fim_periodo]
+        )
+
+        resultado = {}
+        for dia in range(7):
+            data = hoje + timezone.timedelta(days=dia)
+            count = consultas.filter(data_hora__date=data).count()
+            resultado[str(data)] = count
+
+        return Response({"consultas_por_dia": resultado}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+from collections import Counter
+
+@api_view(['GET'])
+def horarios_mais_requisitados(request, cpf):
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+        consultas = Consulta.objects.filter(medico=medico)
+        
+        horarios = [consulta.data_hora.time() for consulta in consultas]
+        contagem_horarios = Counter(horarios)
+        horarios_ordenados = contagem_horarios.most_common()
+
+        return Response({"horarios_mais_requisitados": horarios_ordenados}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def contagem_por_status(request, cpf):
+    try:
+        medico = User.objects.get(user_cpf=cpf, user_type='doctor')
+        consultas = Consulta.objects.filter(medico=medico)
+        
+        status_contagem = consultas.values('status').annotate(total=Count('status'))
+
+        return Response({"contagem_por_status": list(status_contagem)}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
