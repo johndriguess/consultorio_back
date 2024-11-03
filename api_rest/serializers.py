@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Consulta
+from .models import User, Consulta, Prontuario
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +23,8 @@ class ConsultaSerializer(serializers.ModelSerializer):
             'nome_medico', 'especialidade_medico', 'nome_paciente'
         ]
         read_only_fields = ['nome_medico', 'especialidade_medico', 'nome_paciente']
+
+class ProntuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prontuario
+        fields = '__all__'

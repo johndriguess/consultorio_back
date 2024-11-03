@@ -1,20 +1,22 @@
-from datetime import datetime
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django.db.models import Count
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import User, Consulta
-from .serializers import UserSerializer, ConsultaSerializer
+from .models import User, Consulta, Prontuario
+from .serializers import UserSerializer, ConsultaSerializer, ProntuarioSerializer
 
 from .utils import gerar_horarios_disponiveis, filtrar_horarios_ocupados
 
 import json
+from datetime import datetime
+
 
 @api_view(['GET'])
 def get_users(request):
@@ -287,4 +289,44 @@ def contagem_por_status(request, cpf):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def criar_prontuario(request):
+    serializer = ProntuarioSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def prontuarios_por_paciente(request, cpf):
+    prontuarios = Prontuario.objects.filter(cpf=cpf)
+    prontuarios_data = list(prontuarios.values()) 
+    return JsonResponse(prontuarios_data, safe=False)
+
+@api_view(['GET'])
+def prontuarios_por_medico(request, medico_cpf):
+    prontuarios = Prontuario.objects.filter(medico_cpf=medico_cpf)
+    prontuarios_data = list(prontuarios.values())  
+    return JsonResponse(prontuarios_data, safe=False)
+
+@api_view(['GET'])
+def ultima_anamnese_por_cpf(request, cpf):
+    try:
+        ultimo_prontuario = Prontuario.objects.filter(cpf=cpf).order_by('-id').first()
+        if ultimo_prontuario is None:
+            return JsonResponse({"error": "O paciente não tem prontuários anteriores."}, status=404)
+        anamnese_data = {
+            "nome": ultimo_prontuario.nome,
+            "cpf": ultimo_prontuario.cpf,
+            "queixa_principal": ultimo_prontuario.queixa_principal,
+            "historia_doenca_atual": ultimo_prontuario.historia_doenca_atual,
+            "antecedentes_pessoais_fisiologicos": ultimo_prontuario.antecedentes_pessoais_fisiologicos,
+            "antecedentes_pessoais_patologicos": ultimo_prontuario.antecedentes_pessoais_patologicos,
+            "antecedentes_familiares": ultimo_prontuario.antecedentes_familiares,
+            "habitos_condicoes_vida": ultimo_prontuario.habitos_condicoes_vida,
+        }
+        
+        return JsonResponse(anamnese_data)
+    
+    except ObjectDoesNotExist:
+        return JsonResponse({"error": "O paciente não tem prontuários anteriores."}, status=404)

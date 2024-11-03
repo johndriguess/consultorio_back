@@ -17,5 +17,9 @@ urlpatterns = [
     path('consultas/proximos7dias/<str:cpf>/', views.consultas_por_dia, name='consultas_por_dia'),
     path('consultas/horarios-mais-requisitados/<str:cpf>/', views.horarios_mais_requisitados, name='horarios_mais_requisitados'),
     path('consultas/status-contagem/<str:cpf>/', views.contagem_por_status, name='contagem_por_status'),
+    path('prontuarios/criar', views.criar_prontuario, name='criar_prontuario'),
+    path('prontuarios/paciente/<str:cpf>/', views.prontuarios_por_paciente, name='prontuarios_por_paciente'),
+    path('prontuarios/medico/<str:medico_cpf>/', views.prontuarios_por_medico, name='prontuarios_por_medico'),
+    path('prontuarios/ultima-anamnese/<str:cpf>/', views.ultima_anamnese_por_cpf, name='ultima_anamnese_por_cpf'),
 
 ]
