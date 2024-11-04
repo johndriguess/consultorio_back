@@ -86,14 +86,8 @@ class Prontuario(models.Model):
     medico_cpf = models.CharField(max_length=100)
     medico_nome = models.CharField(max_length=255)
     
-    def calcular_imc(self):
-        if self.peso and self.altura:
-            altura_metros = self.altura / 100
-            return round(self.peso / (altura_metros ** 2), 2)
-        return None
-
+    
     def save(self, *args, **kwargs):
-        self.imc = self.calcular_imc()
         super().save(*args, **kwargs)
 
     def __str__(self):
