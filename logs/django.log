@@ -1,0 +1,2 @@
+INFO 2024-11-24 19:48:24,837 autoreload Watching for file changes with StatReloader
+INFO 2024-11-24 19:48:56,319 basehttp "POST /api/consultas/marcar/ HTTP/1.1" 201 246

@@ -18,6 +18,9 @@ from .utils import gerar_horarios_disponiveis, filtrar_horarios_ocupados
 import json
 from datetime import datetime
 from collections import Counter
+import logging
+
+logger = logging.getLogger(__name__)
 
 @ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
@@ -161,17 +164,27 @@ def login_user(request):
 @api_view(['POST'])
 def marcar_consulta(request):
     if getattr(request, 'limited', False):
+        logger.warning("Usuário bloqueado por excesso de requisições: IP=%s", get_client_ip(request))
         return Response(
             {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
             status=status.HTTP_429_TOO_MANY_REQUESTS
         )
-    if request.method == 'POST':
+    try:
         consulta_data = request.data
         serializer = ConsultaSerializer(data=consulta_data)
         if serializer.is_valid():
             serializer.save()
+            logger.info("Consulta agendada com sucesso: %s", consulta_data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.warning("Erro na validação dos dados: %s", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.exception("Erro ao processar a solicitação de agendamento")
+        return Response(
+            {"error": "Erro interno ao processar a solicitação."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
