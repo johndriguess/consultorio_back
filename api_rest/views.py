@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django.db.models import Count
 from django.core.exceptions import ObjectDoesNotExist
+from django_ratelimit.decorators import ratelimit
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,18 +17,30 @@ from .utils import gerar_horarios_disponiveis, filtrar_horarios_ocupados
 
 import json
 from datetime import datetime
+from collections import Counter
 
-
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def get_users(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     if request.method == 'GET':
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET','PUT'])
 def get_by_cpf(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         user = User.objects.get(pk=cpf)
     except:
@@ -44,9 +57,14 @@ def get_by_cpf(request, cpf):
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
     
-
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def user_manager(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     if request.method == 'GET':
         try:
             if request.GET['user']:                     
@@ -96,9 +114,15 @@ def user_manager(request):
         
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
+
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['POST'])
 def register_user(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -108,8 +132,19 @@ def register_user(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['POST'])
 def login_user(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     if request.method == 'POST':
         cpf = request.data.get('user_cpf')
         password = request.data.get('user_password')
@@ -122,8 +157,14 @@ def login_user(request):
         except User.DoesNotExist:
             return Response({"message": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['POST'])
 def marcar_consulta(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     if request.method == 'POST':
         consulta_data = request.data
         serializer = ConsultaSerializer(data=consulta_data)
@@ -132,8 +173,14 @@ def marcar_consulta(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def listar_consultas_paciente(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         consultas = Consulta.objects.filter(paciente__user_cpf=cpf)
         serializer = ConsultaSerializer(consultas, many=True)
@@ -141,8 +188,14 @@ def listar_consultas_paciente(request, cpf):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def horarios_disponiveis(request, cpf, data):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         data = datetime.strptime(data, '%Y-%m-%d').date()
     except ValueError:
@@ -179,8 +232,14 @@ def horarios_disponiveis(request, cpf, data):
 
     return Response({"horarios_disponiveis": horarios_filtrados}, status=status.HTTP_200_OK)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def listar_medicos(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medicos = User.objects.filter(user_type='doctor')  
         serializer = UserSerializer(medicos, many=True)  
@@ -188,8 +247,14 @@ def listar_medicos(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def listar_consultas_medico(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medico = User.objects.get(user_cpf=cpf, user_type='doctor') 
         consultas = Consulta.objects.filter(medico=medico)  
@@ -199,9 +264,15 @@ def listar_consultas_medico(request, cpf):
         return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['PUT'])
 def atualizar_status_consulta(request, consulta_id):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         consulta = Consulta.objects.get(id=consulta_id)  
     except Consulta.DoesNotExist:
@@ -218,8 +289,14 @@ def atualizar_status_consulta(request, consulta_id):
     serializer = ConsultaSerializer(consulta)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def listar_consultas_hoje_medico(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medico = User.objects.get(user_cpf=cpf, user_type='doctor')
         data_atual = timezone.now().date()
@@ -231,9 +308,15 @@ def listar_consultas_hoje_medico(request, cpf):
         return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def consultas_por_dia(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medico = User.objects.get(user_cpf=cpf, user_type='doctor')
         hoje = timezone.now().date()
@@ -257,10 +340,16 @@ def consultas_por_dia(request, cpf):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
-from collections import Counter
 
+
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def horarios_mais_requisitados(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medico = User.objects.get(user_cpf=cpf, user_type='doctor')
         consultas = Consulta.objects.filter(medico=medico)
@@ -274,9 +363,15 @@ def horarios_mais_requisitados(request, cpf):
         return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def contagem_por_status(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         medico = User.objects.get(user_cpf=cpf, user_type='doctor')
         consultas = Consulta.objects.filter(medico=medico)
@@ -289,28 +384,52 @@ def contagem_por_status(request, cpf):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['POST'])
 def criar_prontuario(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     serializer = ProntuarioSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def prontuarios_por_paciente(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     prontuarios = Prontuario.objects.filter(cpf=cpf)
     prontuarios_data = list(prontuarios.values()) 
     return JsonResponse(prontuarios_data, safe=False)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def prontuarios_por_medico(request, medico_cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     prontuarios = Prontuario.objects.filter(medico_cpf=medico_cpf)
     prontuarios_data = list(prontuarios.values())  
     return JsonResponse(prontuarios_data, safe=False)
 
+@ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def ultima_anamnese_por_cpf(request, cpf):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
     try:
         ultimo_prontuario = Prontuario.objects.filter(cpf=cpf).order_by('-id').first()
         if ultimo_prontuario is None:

@@ -32,3 +32,5 @@ def filtrar_horarios_ocupados(horarios_disponiveis, medico, data):
     horarios_disponiveis = [horario for horario in horarios_disponiveis if make_aware(horario) not in horarios_ocupados]
     
     return horarios_disponiveis
+
+
