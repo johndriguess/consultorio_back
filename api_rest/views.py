@@ -306,6 +306,7 @@ def atualizar_status_consulta(request, consulta_id):
 @api_view(['GET'])
 def listar_consultas_hoje_medico(request, cpf):
     if getattr(request, 'limited', False):
+        logger.warning(f"Rate limit exceeded for IP: {request.META.get('REMOTE_ADDR')}")
         return Response(
             {"error": "Limite de requisições excedido. Tente novamente mais tarde."},
             status=status.HTTP_429_TOO_MANY_REQUESTS
@@ -316,12 +317,15 @@ def listar_consultas_hoje_medico(request, cpf):
         consultas = Consulta.objects.filter(medico=medico, data_hora__date=data_atual)
         serializer = ConsultaSerializer(consultas, many=True)
         
+        logger.info(f"Consultas listadas para médico CPF: {cpf}")
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
+        logger.error(f"User with CPF {cpf} not found or not a doctor.")
         return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        logger.exception("An unexpected error occurred while listing consultas.")
+        return Response({"error": "Erro interno no servidor."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 @ratelimit(key='ip', rate='10/m', block=False)
 @api_view(['GET'])
 def consultas_por_dia(request, cpf):

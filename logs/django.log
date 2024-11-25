@@ -1,2 +1,57 @@
 INFO 2024-11-24 19:48:24,837 autoreload Watching for file changes with StatReloader
 INFO 2024-11-24 19:48:56,319 basehttp "POST /api/consultas/marcar/ HTTP/1.1" 201 246
+WARNING 2024-11-24 20:02:43,047 log Too Many Requests: /api/consultas/hoje/12345678900/
+WARNING 2024-11-24 20:02:43,049 log Too Many Requests: /api/consultas/hoje/12345678900/
+WARNING 2024-11-24 20:02:43,054 log Too Many Requests: /api/consultas/hoje/00000000000/
+WARNING 2024-11-24 20:03:36,827 log Too Many Requests: /api/consultas/hoje/12345678900/
+WARNING 2024-11-24 20:03:36,830 log Too Many Requests: /api/consultas/hoje/12345678900/
+INFO 2024-11-24 20:05:46,065 autoreload Watching for file changes with StatReloader
+INFO 2024-11-24 20:14:09,106 tests Login bem-sucedido para o usuário 'testuser'.
+INFO 2024-11-24 20:14:10,438 tests Login bem-sucedido para o usuário 'testuser'.
+INFO 2024-11-24 20:14:11,807 tests Login bem-sucedido para o usuário 'testuser'.
+WARNING 2024-11-24 20:14:13,108 tests Tentativa de login falhou para o usuário 'testuser'.
+WARNING 2024-11-24 20:14:14,296 tests Tentativa de login falhou para o usuário 'testuser'.
+INFO 2024-11-24 20:14:14,297 tests Taxa de sucesso de login: 60.0%
+WARNING 2024-11-24 21:25:01,664 log Not Found: /api/login/
+WARNING 2024-11-24 21:25:01,668 log Not Found: /api/login/
+WARNING 2024-11-24 21:25:01,672 log Not Found: /api/login/
+WARNING 2024-11-24 21:25:01,677 log Not Found: /api/login/
+WARNING 2024-11-24 21:25:01,681 log Not Found: /api/login/
+WARNING 2024-11-24 21:29:18,470 log Bad Request: /api/login/
+WARNING 2024-11-24 21:29:19,689 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:43,427 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:44,635 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:47,035 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:48,363 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:49,717 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:51,031 log Bad Request: /api/login/
+WARNING 2024-11-24 21:45:51,033 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,034 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,036 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,037 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,039 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,041 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:51,042 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:52,375 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:45:53,612 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:10,576 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:11,904 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:14,505 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:15,810 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:17,007 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:18,386 log Bad Request: /api/login/
+WARNING 2024-11-24 21:56:18,389 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,392 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,395 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,398 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,401 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,403 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,405 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,408 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,410 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,412 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:18,415 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:19,706 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:19,709 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:21,046 log Too Many Requests: /api/login/
+WARNING 2024-11-24 21:56:21,048 log Too Many Requests: /api/login/
